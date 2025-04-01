@@ -146,6 +146,10 @@ def dl_album(option, client, id, dl, num=0, copy_path=''):
         print(f'图片数目: {len(photo)}')
         print(f'上架日期: {photo.year}-{photo.month}-{photo.day}')
 
+        if len(photo) < 10:
+            print("图片数目少于10张，不下载")
+            continue
+
         tags = ast.literal_eval(f'{photo.tags}')
         save_dir = option.decide_image_save_dir(photo)
 
