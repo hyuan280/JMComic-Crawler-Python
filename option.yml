@@ -1,0 +1,10 @@
+dir_rule:
+  base_dir: /usr/local/user_bin/JmComic/JM
+  rule: Bd_Aid_Pid
+plugins:
+  after_init:
+    - plugin: login
+      kwargs:
+        username: Huang_280
+        password: zp64Bu5x
+version: '2.1'
