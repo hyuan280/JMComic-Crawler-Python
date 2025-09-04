@@ -716,6 +716,7 @@ class JmApiAdaptTool:
             'actors',
             'related_list',
             'name',
+            'addtime',
             'description',
             ('id', 'album_id'),
             ('author', 'authors'),
@@ -726,6 +727,7 @@ class JmApiAdaptTool:
             'name',
             'series_id',
             'tags',
+            'addtime',
             ('id', 'photo_id'),
             ('images', 'page_arr'),
 
@@ -734,6 +736,8 @@ class JmApiAdaptTool:
 
     @classmethod
     def parse_entity(cls, data: dict, clazz: type):
+        #import pprint
+        #pprint.pprint(data)
         adapter = cls.get_adapter(clazz)
 
         fields = {}
@@ -772,7 +776,7 @@ class JmApiAdaptTool:
                 (chapter.id, chapter.sort, chapter.name)
             )
         fields['episode_list'] = episode_list
-        for it in 'scramble_id', 'page_count', 'pub_date', 'update_date':
+        for it in 'scramble_id', 'page_count':
             fields[it] = '0'
 
     @classmethod

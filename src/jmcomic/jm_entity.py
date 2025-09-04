@@ -12,6 +12,21 @@ class Downloadable:
         self.exists: bool = False
         self.skip = False
 
+class DateEntity:
+    @property
+    def year(self):
+        from datetime import datetime
+        return datetime.fromtimestamp(self.addtime).year
+
+    @property
+    def month(self):
+        from datetime import datetime
+        return datetime.fromtimestamp(self.addtime).month
+
+    @property
+    def day(self):
+        from datetime import datetime
+        return datetime.fromtimestamp(self.addtime).day
 
 class JmBaseEntity:
 
@@ -289,13 +304,14 @@ class JmImageDetail(JmBaseEntity, Downloadable):
     __repr__ = __str__
 
 
-class JmPhotoDetail(DetailEntity, Downloadable):
+class JmPhotoDetail(DetailEntity, Downloadable, DateEntity):
 
     def __init__(self,
                  photo_id,
                  name,
                  series_id,
                  sort,
+                 addtime,
                  tags='',
                  scramble_id='',
                  page_arr=None,
@@ -309,12 +325,21 @@ class JmPhotoDetail(DetailEntity, Downloadable):
         self.scramble_id: str = str(scramble_id)
         self.name: str = str(name).strip()
         self.sort: int = int(sort)
+        #self.addtime: int = int(addtime)
         self._tags: str = tags
         self._series_id: int = int(series_id)
 
         self._author: Optional[str] = author
         self.from_album: Optional[JmAlbumDetail] = from_album
         self.index = self.album_index
+
+        if isinstance(addtime, int):
+            self.addtime = addtime
+        elif isinstance(addtime, str) and addtime.isdigit():
+            self.addtime = int(addtime)
+        else:
+            import time
+            self.addtime = int(time.time())
 
         # 下面的属性和图片url有关
         if isinstance(page_arr, str):
@@ -451,7 +476,7 @@ class JmPhotoDetail(DetailEntity, Downloadable):
         return True
 
 
-class JmAlbumDetail(DetailEntity, Downloadable):
+class JmAlbumDetail(DetailEntity, Downloadable, DateEntity):
 
     def __init__(self,
                  album_id,
@@ -459,8 +484,7 @@ class JmAlbumDetail(DetailEntity, Downloadable):
                  name,
                  episode_list,
                  page_count,
-                 pub_date,
-                 update_date,
+                 addtime,
                  likes,
                  views,
                  comment_count,
@@ -477,8 +501,8 @@ class JmAlbumDetail(DetailEntity, Downloadable):
         self.name: str = str(name).strip()
         self.description = str(description).strip()
         self.page_count: int = int(page_count)  # 总页数
-        self.pub_date: str = pub_date  # 发布日期
-        self.update_date: str = update_date  # 更新日期
+        #self.addtime: int = int(addtime)  # 上架日期
+        self.description: str = description  # 描述
 
         self.likes: str = likes  # [1K] 點擊喜歡
         self.views: str = views  # [40K] 次觀看
@@ -488,11 +512,19 @@ class JmAlbumDetail(DetailEntity, Downloadable):
         self.tags: List[str] = tags  # 標籤
         self.authors: List[str] = authors  # 作者
 
+        if isinstance(addtime, int):
+            self.addtime = addtime
+        elif isinstance(addtime, str) and addtime.isdigit():
+            self.addtime = int(addtime)
+        else:
+            import time
+            self.addtime = int(time.time())
+
         # 有的 album 没有章节，则自成一章。
         episode_list: List[Tuple[str, str, str]]
         if len(episode_list) == 0:
             # photo_id, photo_index, photo_title, photo_pub_date
-            episode_list = [(album_id, "1", name)]
+            episode_list = [(album_id, "1", name, addtime)]
         else:
             episode_list = self.distinct_episode(episode_list)
 
@@ -537,7 +569,7 @@ class JmAlbumDetail(DetailEntity, Downloadable):
             raise IndexError(f'photo index out of range for album-{self.album_id}: {index} >= {length}')
 
         # ('212214', '81', '94 突然打來', '2020-08-29')
-        pid, pindex, pname = self.episode_list[index]
+        pid, pindex, pname, addtime = self.episode_list[index]
 
         photo = JmModuleConfig.photo_class()(
             photo_id=pid,
@@ -545,6 +577,7 @@ class JmAlbumDetail(DetailEntity, Downloadable):
             name=pname,
             series_id=self.album_id,
             sort=pindex,
+            addtime=addtime,
             from_album=self,
         )
 
